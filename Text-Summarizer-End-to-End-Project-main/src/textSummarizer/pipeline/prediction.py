@@ -10,14 +10,7 @@ class PredictionPipeline:
         tokenizer = AutoTokenizer.from_pretrained(self.config.tokenizer_path)
         model = AutoModelForSeq2SeqLM.from_pretrained(self.config.model_path)
 
-        gen_kwargs = {
-            "length_penalty": 0.8,
-            "num_beams": 8,
-            "max_length": 60,
-            "min_length": 10,
-            "no_repeat_ngram_size": 3,
-            "early_stopping": True,
-        }
+        gen_kwargs = {"length_penalty": 0.8, "num_beams": 8, "max_length": 128}
 
         inputs = tokenizer(
             text,

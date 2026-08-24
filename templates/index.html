@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Distill — Conversation Summarizer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0E1119;
+    --ink-2:#151926;
+    --panel:#171C2A;
+    --line:#28304200;
+    --hair:#293042;
+    --text:#E9ECF4;
+    --muted:#868EA3;
+    --faint:#5A6178;
+    --gold:#E7B15E;
+    --gold-soft:#f0c884;
+    --danger:#E8877A;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    background:var(--ink);
+    color:var(--text);
+    font-family:"IBM Plex Sans",system-ui,sans-serif;
+    line-height:1.55;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+    position:relative;
+    overflow-x:hidden;
+  }
+  /* faint ambient glow behind the hero */
+  body::before{
+    content:"";
+    position:fixed;
+    top:-30vh;left:50%;
+    width:120vw;height:80vh;
+    transform:translateX(-50%);
+    background:radial-gradient(ellipse at center, rgba(231,177,94,.10), rgba(231,177,94,0) 60%);
+    pointer-events:none;
+    z-index:0;
+  }
+  .wrap{
+    position:relative;
+    z-index:1;
+    max-width:760px;
+    margin:0 auto;
+    padding:72px 24px 96px;
+  }
+  /* ---- hero ---- */
+  .eyebrow{
+    font-family:"IBM Plex Mono",monospace;
+    font-size:12px;
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    color:var(--gold);
+    margin-bottom:22px;
+  }
+  h1{
+    font-family:"Instrument Serif",Georgia,serif;
+    font-weight:400;
+    font-size:clamp(44px,8vw,76px);
+    line-height:.98;
+    letter-spacing:-.01em;
+    margin-bottom:20px;
+  }
+  h1 em{font-style:italic;color:var(--gold-soft)}
+  .lede{
+    color:var(--muted);
+    font-size:17px;
+    max-width:46ch;
+    margin-bottom:44px;
+  }
+  /* ---- panels ---- */
+  .panel{
+    background:var(--panel);
+    border:1px solid var(--hair);
+    border-radius:14px;
+    overflow:hidden;
+  }
+  .panel-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:14px 18px;
+    border-bottom:1px solid var(--hair);
+  }
+  .panel-label{
+    font-family:"IBM Plex Mono",monospace;
+    font-size:11px;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:var(--faint);
+  }
+  textarea{
+    width:100%;
+    min-height:200px;
+    resize:vertical;
+    background:transparent;
+    border:0;
+    outline:none;
+    color:var(--text);
+    font-family:"IBM Plex Sans",sans-serif;
+    font-size:16px;
+    line-height:1.65;
+    padding:20px 18px;
+    display:block;
+  }
+  textarea::placeholder{color:var(--faint)}
+  .panel-foot{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:12px 18px;
+    border-top:1px solid var(--hair);
+    font-family:"IBM Plex Mono",monospace;
+    font-size:12px;
+    color:var(--faint);
+  }
+  .linkish{
+    background:none;border:0;cursor:pointer;
+    font-family:"IBM Plex Mono",monospace;
+    font-size:12px;letter-spacing:.04em;
+    color:var(--muted);
+    text-decoration:underline;
+    text-underline-offset:3px;
+    padding:4px 0;
+  }
+  .linkish:hover{color:var(--gold)}
+  /* ---- action row ---- */
+  .action{
+    display:flex;
+    align-items:center;
+    gap:16px;
+    margin:22px 0;
+  }
+  button.run{
+    font-family:"IBM Plex Sans",sans-serif;
+    font-weight:600;
+    font-size:15px;
+    color:#20160A;
+    background:var(--gold);
+    border:0;
+    border-radius:10px;
+    padding:13px 26px;
+    cursor:pointer;
+    transition:background .15s ease, transform .05s ease;
+  }
+  button.run:hover:not(:disabled){background:var(--gold-soft)}
+  button.run:active:not(:disabled){transform:translateY(1px)}
+  button.run:disabled{opacity:.55;cursor:progress}
+  button.run:focus-visible{outline:2px solid var(--gold-soft);outline-offset:3px}
+  .status{
+    font-family:"IBM Plex Mono",monospace;
+    font-size:12.5px;
+    color:var(--muted);
+    min-height:18px;
+  }
+  .dots::after{
+    content:"";
+    animation:dots 1.2s steps(4,end) infinite;
+  }
+  @keyframes dots{0%{content:""}25%{content:"."}50%{content:".."}75%{content:"..."}}
+  /* ---- ratio divider (the signature) ---- */
+  .ratio{
+    display:none;
+    align-items:center;
+    gap:14px;
+    margin:8px 0 22px;
+    opacity:0;
+    transform:translateY(6px);
+    transition:opacity .5s ease, transform .5s ease;
+  }
+  .ratio.show{display:flex;opacity:1;transform:none}
+  .ratio .rule{flex:1;height:1px;background:var(--hair)}
+  .ratio .chip{
+    font-family:"IBM Plex Mono",monospace;
+    font-size:12px;
+    letter-spacing:.04em;
+    color:var(--gold);
+    white-space:nowrap;
+  }
+  .ratio .chip b{color:var(--gold-soft);font-weight:500}
+  /* ---- output ---- */
+  #outWrap{
+    display:none;
+    opacity:0;
+    transform:translateY(8px);
+    transition:opacity .5s ease, transform .5s ease;
+  }
+  #outWrap.show{display:block;opacity:1;transform:none}
+  #summary{
+    font-family:"Instrument Serif",Georgia,serif;
+    font-size:24px;
+    line-height:1.4;
+    color:var(--text);
+    padding:24px 18px;
+  }
+  #summary.err{
+    font-family:"IBM Plex Mono",monospace;
+    font-size:14px;
+    line-height:1.6;
+    color:var(--danger);
+  }
+  footer{
+    margin-top:56px;
+    font-family:"IBM Plex Mono",monospace;
+    font-size:11px;
+    letter-spacing:.06em;
+    color:var(--faint);
+  }
+  footer a{color:var(--muted);text-decoration:none;border-bottom:1px solid var(--hair)}
+  footer a:hover{color:var(--gold)}
+  @media (max-width:560px){
+    .wrap{padding:48px 18px 72px}
+    .action{flex-direction:column;align-items:stretch}
+    button.run{width:100%}
+    #summary{font-size:21px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{transition:none!important;animation:none!important}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">Shruti Chauhan , Welcome to Summarization</div>
+  <h1>Distill the <em>conversation.</em></h1>
+  <p class="lede">Paste a chat or thread and get the gist in a sentence or two. Trained to read dialogue the way people skim it — for who said what, and what actually got decided.</p>
+
+  <div class="panel">
+    <div class="panel-head">
+      <span class="panel-label">Conversation</span>
+      <button class="linkish" id="exampleBtn" type="button">Try an example</button>
+    </div>
+    <textarea id="input" placeholder="Amanda: I baked cookies. Do you want some?&#10;Jerry: Sure! How many did you make?&#10;Amanda: About two dozen — chocolate chip and oatmeal raisin.&#10;Jerry: Can you bring some to work tomorrow?&#10;Amanda: Of course, I'll pack a box tonight."></textarea>
+    <div class="panel-foot">
+      <span id="inCount">0 words</span>
+      <span>the longer the thread, the more there is to condense</span>
+    </div>
+  </div>
+
+  <div class="action">
+    <button class="run" id="runBtn" type="button">Summarize</button>
+    <span class="status" id="status"></span>
+  </div>
+
+  <div class="ratio" id="ratio">
+    <span class="rule"></span>
+    <span class="chip" id="ratioChip"></span>
+    <span class="rule"></span>
+  </div>
+
+  <div id="outWrap">
+    <div class="panel">
+      <div class="panel-head">
+        <span class="panel-label">Summary</span>
+        <button class="linkish" id="copyBtn" type="button">Copy</button>
+      </div>
+      <div id="summary"></div>
+      <div class="panel-foot">
+        <span id="outCount">0 words</span>
+        <span id="timing"></span>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    Pegasus-SAMSum · served by FastAPI · <a href="/docs">API docs</a>
+  </footer>
+</div>
+
+<script>
+  const input   = document.getElementById('input');
+  const inCount = document.getElementById('inCount');
+  const runBtn  = document.getElementById('runBtn');
+  const status  = document.getElementById('status');
+  const ratio   = document.getElementById('ratio');
+  const ratioChip = document.getElementById('ratioChip');
+  const outWrap = document.getElementById('outWrap');
+  const summary = document.getElementById('summary');
+  const outCount= document.getElementById('outCount');
+  const timing  = document.getElementById('timing');
+  const copyBtn = document.getElementById('copyBtn');
+  const exampleBtn = document.getElementById('exampleBtn');
+
+  const EXAMPLE = "Amanda: I baked cookies. Do you want some?\nJerry: Sure! How many did you make?\nAmanda: I made about two dozen, chocolate chip and oatmeal raisin.\nJerry: Awesome, can you bring some to work tomorrow?\nAmanda: Of course, I will pack a box for you tonight.\nJerry: You are the best, I will bring coffee.";
+
+  const wordCount = t => (t.trim().match(/\S+/g) || []).length;
+
+  function refreshInCount(){
+    const n = wordCount(input.value);
+    inCount.textContent = n + (n === 1 ? ' word' : ' words');
+  }
+  input.addEventListener('input', refreshInCount);
+
+  exampleBtn.addEventListener('click', () => {
+    input.value = EXAMPLE;
+    refreshInCount();
+    input.focus();
+  });
+
+  copyBtn.addEventListener('click', async () => {
+    try{
+      await navigator.clipboard.writeText(summary.textContent);
+      copyBtn.textContent = 'Copied';
+      setTimeout(() => copyBtn.textContent = 'Copy', 1400);
+    }catch(e){ /* clipboard blocked — ignore */ }
+  });
+
+  async function summarize(){
+    const text = input.value.trim();
+    if(!text){
+      status.textContent = 'Add a conversation first.';
+      input.focus();
+      return;
+    }
+
+    runBtn.disabled = true;
+    ratio.classList.remove('show');
+    outWrap.classList.remove('show');
+    status.innerHTML = 'Summarizing<span class="dots"></span>';
+    status.title = 'The first run loads the model into memory and can take a while.';
+
+    const started = performance.now();
+    try{
+      const res = await fetch('/predict?text=' + encodeURIComponent(text), {
+        method: 'POST',
+        headers: { 'accept': 'application/json' }
+      });
+
+      if(!res.ok){
+        throw new Error('Server returned ' + res.status + ' — check the terminal running app.py.');
+      }
+
+      // endpoint returns a JSON-encoded string
+      let out = await res.json();
+      if(typeof out !== 'string') out = String(out);
+      out = out.trim();
+
+      const secs = ((performance.now() - started) / 1000).toFixed(1);
+
+      summary.classList.remove('err');
+      summary.textContent = out;
+
+      const inN = wordCount(text);
+      const outN = wordCount(out);
+      outCount.textContent = outN + (outN === 1 ? ' word' : ' words');
+      timing.textContent = secs + 's';
+
+      if(outN > 0 && inN > outN){
+        const times = (inN / outN).toFixed(1);
+        const pct = Math.round((1 - outN / inN) * 100);
+        ratioChip.innerHTML = '<b>' + times + '×</b> shorter · <b>' + pct + '%</b> condensed';
+        ratio.classList.add('show');
+      }
+
+      outWrap.classList.add('show');
+      status.textContent = '';
+    }catch(err){
+      summary.classList.add('err');
+      summary.textContent = err.message || 'Something went wrong.';
+      ratio.classList.remove('show');
+      outCount.textContent = '';
+      timing.textContent = '';
+      outWrap.classList.add('show');
+      status.textContent = '';
+    }finally{
+      runBtn.disabled = false;
+    }
+  }
+
+  runBtn.addEventListener('click', summarize);
+  // Ctrl/Cmd + Enter to run
+  input.addEventListener('keydown', e => {
+    if((e.ctrlKey || e.metaKey) && e.key === 'Enter') summarize();
+  });
+
+  refreshInCount();
+</script>
+</body>
+</html>
