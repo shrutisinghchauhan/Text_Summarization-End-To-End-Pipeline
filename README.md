@@ -17,7 +17,9 @@ pinned: false
 
 <!-- Project UI Demo Image -->
 <p align="center">
-  <img src="https://raw.githubusercontent.com/shrutisinghchauhan/Text_Summarization-End-To-End-Pipeline/main/docs/ui-demo.png" alt="App Web Interface Demo" width="100%" />
+  <a href="https://huggingface.co/spaces/shrutiii04/textsummarization">
+    <img src="docs/ui-demo.png" alt="App Web Interface Demo" width="100%" />
+  </a>
 </p>
 
 An end-to-end Deep Learning and MLOps pipeline built using **State-of-the-Art Transformer Models (Google Pegasus)** for automated text summarization. This project features a modular architecture covering data ingestion, data validation, model transformation, training, evaluation, and a containerized web deployment via **Docker** on **Hugging Face Spaces**.
@@ -38,7 +40,7 @@ An end-to-end Deep Learning and MLOps pipeline built using **State-of-the-Art Tr
 
 <!-- Architecture Diagram Image -->
 <p align="center">
-  <img src="https://raw.githubusercontent.com/shrutisinghchauhan/Text_Summarization-End-To-End-Pipeline/main/docs/architecture.png" alt="End-to-End Pipeline Architecture" width="90%" />
+  <img src="docs/architecture.png" alt="End-to-End Pipeline Architecture" width="90%" />
 </p>
 
 1. **Data Ingestion**: Downloads raw text data and extracts artifacts.
@@ -90,3 +92,4 @@ Text_Summarization-End-To-End-Pipeline/
 ├── params.yaml              # Hyperparameters & model configuration
 ├── requirements.txt         # Project dependencies
 └── README.md                # Project documentation
+```
