@@ -18,7 +18,7 @@ pinned: false
 <!-- Project UI Demo Image -->
 <p align="center">
   <a href="https://huggingface.co/spaces/shrutiii04/textsummarization">
- <img src="ui-demo.png" alt="App Web Interface Demo" width="100%" />
+    <img src="ui-demo.png" alt="App Web Interface Demo" width="100%" />
   </a>
 </p>
 
@@ -40,7 +40,7 @@ An end-to-end Deep Learning and MLOps pipeline built using **State-of-the-Art Tr
 
 <!-- Architecture Diagram Image -->
 <p align="center">
-  <img src="docs/architecture.png" alt="End-to-End Pipeline Architecture" width="90%" />
+  <img src="architecture.png" alt="End-to-End Pipeline Architecture" width="90%" />
 </p>
 
 1. **Data Ingestion**: Downloads raw text data and extracts artifacts.
