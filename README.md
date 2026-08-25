@@ -1,95 +1,173 @@
----
-title: Text Summarization
-emoji: 📝
-colorFrom: blue
-colorTo: indigo
-sdk: docker
-app_port: 8080
-pinned: false
----
+# 📝 Text Summarization Service
 
-# 📝 End-to-End Text Summarization NLP Pipeline
+### End-to-End NLP & MLOps Pipeline using PEGASUS
 
-[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
-[![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?logo=docker&logoColor=white)](https://www.docker.com/)
-[![Hugging Face Spaces](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Spaces-blue)](https://huggingface.co/spaces/shrutiii04/textsummarization)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+> An end-to-end **abstractive text summarization** system built using Google's **PEGASUS Transformer**, with data validation, model fine-tuning, ROUGE evaluation, REST API inference, and Docker-based deployment.
 
-<!-- Project UI Demo Image -->
-<p align="center">
-  <a href="https://huggingface.co/spaces/shrutiii04/textsummarization">
-    <img src="ui-demo.png" alt="App Web Interface Demo" width="100%" />
-  </a>
-</p>
+<div align="center">
 
-An end-to-end Deep Learning and MLOps pipeline built using **State-of-the-Art Transformer Models (Google Pegasus)** for automated text summarization. This project features a modular architecture covering data ingestion, data validation, model transformation, training, evaluation, and a containerized web deployment via **Docker** on **Hugging Face Spaces**.
+![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)
+![Transformers](https://img.shields.io/badge/HuggingFace-Transformers-orange.svg)
+![FastAPI](https://img.shields.io/badge/FastAPI-API-009688.svg)
+![Docker](https://img.shields.io/badge/Docker-Containerized-2496ED.svg)
+
+</div>
 
 ---
 
-## 🌟 Key Features
+## 🏗️ Architecture
 
-* **Modular MLOps Design**: Standardized enterprise codebase architecture isolating components for Data Ingestion, Data Validation, Transformation, Training, and Evaluation.
-* **State-of-the-Art Model**: Utilizes fine-tuned sequence-to-sequence transformer architectures for high-accuracy abstractive summarization.
-* **Containerized Deployment**: Completely containerized using **Docker** running on port `8080`.
-* **Interactive Web Interface**: Sleek frontend UI allowing real-time text input and automatic summary generation.
-* **Cloud Ready**: Configured for continuous integration and automated hosting on Hugging Face Spaces.
+<div align="center">
+<img src="architecture.png" alt="System Architecture" width="90%">
+</div>
 
----
+```mermaid
+flowchart LR
+    A[Data Ingestion] --> B[Data Validation]
+    B --> C[Data Transformation]
+    C --> D[PEGASUS Fine-Tuning]
+    D --> E[ROUGE Evaluation]
+    E --> F[Trained Model]
+    F --> G[FastAPI]
+    G --> H[Docker Deployment]
+```
 
-## ⚡ Pipeline & System Architecture
+### Pipeline
 
-<!-- Architecture Diagram Image -->
-<p align="center">
-  <img src="architecture.png" alt="End-to-End Pipeline Architecture" width="90%" />
-</p>
-
-1. **Data Ingestion**: Downloads raw text data and extracts artifacts.
-2. **Data Validation**: Checks file presence and schema consistency against baseline requirements.
-3. **Data Transformation**: Tokenizes raw text inputs into tensor representations.
-4. **Model Training**: Fine-tunes the transformer model on GPU/CPU resources configured in `params.yaml`.
-5. **Model Evaluation**: Generates ROUGE metric scores to benchmark prediction quality.
-6. **Web Inference**: Exposes API endpoints and a web frontend for real-time text summarization.
+**Data → Validation → Transformation → Fine-Tuning → Evaluation → API → Deployment**
 
 ---
 
-## 🛠️ Tech Stack
+## 🧠 Core Components
 
-| Category | Technologies & Tools |
-| :--- | :--- |
-| **Language** | Python 3.8+ |
-| **Deep Learning** | PyTorch, Hugging Face Transformers, Datasets, Evaluate, ROUGE |
-| **Pipeline & Web** | FastAPI / Flask, HTML5/CSS3 |
-| **DevOps & MLOps** | Docker, Git, GitHub Actions |
-| **Cloud Hosting** | Hugging Face Spaces (Docker SDK) |
+### 1. Data Ingestion
+
+Loads the summarization dataset and prepares the required train/validation/test data.
+
+### 2. Data Validation
+
+Checks dataset structure, missing values, and data consistency before training.
+
+### 3. Data Transformation
+
+Cleans the text and uses the **PEGASUS tokenizer** to convert documents and summaries into model-ready inputs.
+
+### 4. Model Training
+
+Fine-tunes the pre-trained **PEGASUS Transformer** for abstractive summarization.
+
+### 5. Evaluation
+
+Generated summaries are evaluated against reference summaries using:
+
+* **ROUGE-1**
+* **ROUGE-2**
+* **ROUGE-L**
+
+### 6. API Inference
+
+The trained model is exposed through a **FastAPI REST API**.
+
+```http
+POST /predict
+```
+
+Example request:
+
+```json
+{
+  "text": "Enter the document or article to summarize..."
+}
+```
+
+Example response:
+
+```json
+{
+  "summary": "Generated concise summary..."
+}
+```
+
+### 7. Docker Deployment
+
+The application is containerized using Docker to provide a reproducible runtime environment.
+
+```bash
+docker build -t text-summarizer .
+docker run -p 8080:8080 text-summarizer
+```
 
 ---
 
-## 📁 Directory Structure
+## 📁 Project Structure
 
 ```text
-Text_Summarization-End-To-End-Pipeline/
-├── .github/workflows/       # CI/CD deployment pipelines
-├── artifacts/               # Processed data, model checkpoints & metrics
-├── config/                  # Pipeline parameters and directory path configs
-│   └── config.yaml
-├── docs/                    # Architectural diagrams and screenshot assets
-│   ├── architecture.png
-│   └── ui-demo.png
-├── research/                # Experimental Jupyter Notebooks (01 to 05)
-├── src/textSummarizer/      # Modular Python source package
-│   ├── components/          # Ingestion, validation, transformation, trainer modules
-│   ├── config/              # Configuration manager setups
-│   ├── constants/           # Global constant definitions
-│   ├── entity/              # Dataclasses and schemas
-│   ├── logging/             # Centralized custom logger
-│   ├── pipeline/            # Training and prediction workflow stages
-│   └── utils/               # Common helper functions
-├── templates/               # UI HTML templates
-│   └── index.html
-├── app.py                   # Application entry point & web API endpoints
-├── Dockerfile               # Container build configuration
-├── main.py                  # Pipeline execution runner
-├── params.yaml              # Hyperparameters & model configuration
-├── requirements.txt         # Project dependencies
-└── README.md                # Project documentation
+Text-Summarizer/
+│
+├── src/
+│   ├── components/
+│   │   ├── data_ingestion.py
+│   │   ├── data_validation.py
+│   │   ├── data_transformation.py
+│   │   ├── model_trainer.py
+│   │   └── model_evaluation.py
+│   │
+│   ├── pipeline/
+│   ├── configuration/
+│   └── utils/
+│
+├── artifacts/
+├── config/
+├── app.py
+├── Dockerfile
+├── requirements.txt
+└── README.md
 ```
+
+---
+
+## ⚙️ Tech Stack
+
+| Component  | Technology                          |
+| ---------- | ----------------------------------- |
+| Language   | Python                              |
+| NLP Model  | PEGASUS                             |
+| Framework  | Hugging Face Transformers / PyTorch |
+| Evaluation | ROUGE                               |
+| API        | FastAPI                             |
+| Deployment | Docker                              |
+
+---
+
+## ▶️ Run Locally
+
+```bash
+git clone <repository-url>
+cd Text-Summarizer
+pip install -r requirements.txt
+python app.py
+```
+
+API:
+
+```text
+http://localhost:8080
+```
+
+---
+
+## 🎯 Key Takeaway
+
+This project demonstrates the complete ML lifecycle:
+
+**Data Engineering → Transformer Fine-Tuning → Evaluation → API Development → Docker Deployment**
+
+It focuses not only on building an NLP model, but on turning the model into a **reusable and deployable ML service**.
+
+---
+
+<div align="center">
+
+**Built with Python • PEGASUS • FastAPI • Docker**
+
+</div>
