@@ -18,7 +18,7 @@ pinned: false
 <!-- Project UI Demo Image -->
 <p align="center">
   <a href="https://huggingface.co/spaces/shrutiii04/textsummarization">
-    <img src="docs/ui-demo.png" alt="App Web Interface Demo" width="100%" />
+ <img src="ui-demo.png" alt="App Web Interface Demo" width="100%" />
   </a>
 </p>
 
